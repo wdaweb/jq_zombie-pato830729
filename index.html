@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: rgb(42, 39, 83);
+        }
+
+        #info {
+            width: 300px;
+            height: 300px;
+            background: url(./info_bg.png);
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            /* margin-right: 60px; */
+        }
+
+        #info_text {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            transform: translate(50%, 50%);
+
+        }
+
+        p {
+            color: aliceblue;
+        }
+
+        #gameArea {
+            margin: auto;
+            width: 1000px;
+            height: 800px;
+            background: url(./bg.png);
+            overflow: hidden;
+            position: relative;
+            cursor: url(./net.png) 50 50, auto;
+        }
+
+        img {
+            height: 150px;
+            position: absolute;
+            user-select: none;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="info">
+        <div id="info_text"><input type="button" value="開始" id="btn-start">
+            <br>
+            <p>分數: <span id="text-score">0</span> 分</p>
+            <p>剩餘: <span id="text-time">0</span> 秒</p>
+        </div>
+
+    </div>
+
+
+    <div id="gameArea"></div>
+
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.1/jquery.min.js'
+        integrity='sha512-aVKKRRi/Q/YV+4mjoKBsE4x3H+BkegoM/em46NNlCqNTmUYADjBbeNefNxYV7giUp0VxICtqdrbqU7iVaeZNXA=='
+        crossorigin='anonymous'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        let score = 0
+        let countdown = 0
+        let timer = 0
+
+        $('#btn-start').click(function () {
+
+            $(this).attr('disabled', true)
+            score = 0
+            $('#text-score').text(score)
+            countdown = 30
+            $('#text-time').text(countdown)
+
+            timer = setInterval(function () {
+                countdown--
+                $('#text-time').text(countdown)
+
+                const random = Math.ceil(Math.random() * 10)
+                if (random > 0 && $('.fish').length < 8) {
+                    new fish();
+                    new fish();
+                }
+
+                if (countdown === 0) {
+                    clearInterval(timer)
+                    $('#gameArea img').remove()
+                    $('#btn-start').attr('disabled', false)
+                    Swal.fire({
+                        icon: 'info',
+                        title: '時間到',
+                        text: `你得到 ${score} 分`
+                    })
+                }
+            }, 1000)
+        })
+
+        $('#gameArea').on('click', '.fish', function () {
+            $(this).remove()
+            score += 10
+            $('#text-score').text(score)
+        })
+
+        class fish {
+            constructor() {
+                this.top = Math.round(Math.random() * 100);
+                this.left = 0;
+                this.speed = Math.ceil(Math.round(Math.random() * 4)) + 1;
+                this.target = $(`<img src="./fish.gif" class="fish" style="top:${this.top}%; left:${this.left}%">`)
+                $('#gameArea').append(this.target);
+                this.move();
+            }
+
+            move() {
+                if (this.left > 100) return this.kill();
+                var height = (Math.random() * this.speed - this.speed / 2);
+                var top = this.top + height;
+                var width = Math.ceil(Math.sqrt(this.speed * this.speed - height * height));
+                var left = this.left + width;
+                this.top = top;
+                this.left = left;
+                top += "%";
+                left += "%";
+                var self = this;
+                this.target.stop().animate({ top, left }, 100, function () {
+                    if ($('#btn-start').attr('disabled') === 'disabled') {
+                        self.move();
+                    }
+                })
+            }
+
+            kill() {
+                this.target.remove();
+            }
+        }
+    </script>
+</body>
+
+</html>
